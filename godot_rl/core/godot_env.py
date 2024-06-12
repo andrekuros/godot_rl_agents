@@ -17,7 +17,7 @@ from godot_rl.core.utils import ActionSpaceProcessor, convert_macos_path
 
 class GodotEnv:
     MAJOR_VERSION = "0"  # Versioning for the environment
-    MINOR_VERSION = "7"
+    MINOR_VERSION = "3"
     DEFAULT_PORT = 11008  # Default port for communication with Godot Game
     DEFAULT_TIMEOUT = 60  # Default socket timeout TODO
 
@@ -129,8 +129,7 @@ class GodotEnv:
         result = []
 
         for i in range(self.num_envs):
-            env_action = {}
-
+            env_action = {}            
             for j, k in enumerate(self._action_space.keys()):
                 if order_ij is True:
                     v = action[i][j]
@@ -156,8 +155,12 @@ class GodotEnv:
         Returns:
             tuple: Tuple containing observation, reward, done flag, termination flag, and info.
         """
+        
         self.step_send(action, order_ij=order_ij)
         return self.step_recv()
+        
+        
+        
 
     def step_send(self, action, order_ij=False):
         """
@@ -171,9 +174,10 @@ class GodotEnv:
         message = {
             "type": "action",
             "action": self.from_numpy(action, order_ij=order_ij),
-        }
-        self._send_as_json(message)
+        }        
 
+        self._send_as_json(message)        
+        
     def step_recv(self):
         """
         Receive the step response from the Godot environment.
@@ -201,7 +205,7 @@ class GodotEnv:
 
         Returns:
             dict: The processed observation data.
-        """
+        """        
         for k in response_obs[0].keys():
             if "2d" in k:
                 for sub in response_obs:
@@ -220,7 +224,7 @@ class GodotEnv:
             "type": "reset",
         }
         self._send_as_json(message)
-        response = self._get_json_dict()
+        response = self._get_json_dict()        
         response["obs"] = self._process_obs(response["obs"])
         assert response["type"] == "reset"
         obs = response["obs"]
@@ -356,6 +360,8 @@ class GodotEnv:
         self.observation_space = spaces.Dict(observation_spaces)
 
         self.num_envs = json_dict["n_agents"]
+        
+        return json_dict
 
     @staticmethod
     def _decode_2d_obs_from_string(
@@ -366,7 +372,14 @@ class GodotEnv:
 
     def _send_as_json(self, dictionary):
         message_json = json.dumps(dictionary)
+        
+        #start_time = time.time()
+        
         self._send_string(message_json)
+                
+        #end_time = time.time()
+        #elapsed_time_ms = (end_time - start_time) * 1000
+        #print(f'Elapsed {dictionary} : {elapsed_time_ms:.10f} milliseconds')
 
     def _get_json_dict(self):
         data = self._get_data()

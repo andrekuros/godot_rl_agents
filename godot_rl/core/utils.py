@@ -53,7 +53,7 @@ class ActionSpaceProcessor:
                         if isinstance(space, gym.spaces.Box):
                             assert len(space.shape) == 1
                             space_size += space.shape[0]
-                        elif isinstance(space, gym.spaces.Discrete):
+                        elif isinstance(space, gym.spaces.Discrete):                                                        
                             if space.n > 2:
                                 # for now only binary actions are supported if you mix different spaces
                                 # need to add support for the n>2 case
@@ -88,8 +88,11 @@ class ActionSpaceProcessor:
 
         for space in self._original_action_space.spaces:
             if isinstance(space, gym.spaces.Box):
-                assert len(space.shape) == 1
-                original_action.append(action[:, counter : counter + space.shape[0]])
+                assert len(space.shape) == 1               
+                #KUR MOD for MultiAgent
+                for act in action:
+                    original_action.append(act[counter : counter + space.shape[0]])
+                #original_action.append(action[:, counter : counter + space.shape[0]])
                 counter += space.shape[0]
 
             elif isinstance(space, gym.spaces.Discrete):
